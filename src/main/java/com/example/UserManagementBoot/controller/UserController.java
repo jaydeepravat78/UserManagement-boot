@@ -48,14 +48,6 @@ public class UserController {
 
 	private static final Logger log = Logger.getLogger(UserController.class);
 
-	public UserService getService() {
-		return service;
-	}
-
-	public void setService(UserService service) {
-		this.service = service;
-	}
-
 	@GetMapping("/")
 	public String defaultUrl(HttpSession session, HttpServletResponse response) {
 
@@ -133,16 +125,17 @@ public class UserController {
 	@PostMapping(path = "/registerController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String registration(@Valid @ModelAttribute User user, BindingResult br,
 			@RequestPart MultipartFile user_photo, HttpSession session, Model model) {
-		String errors = "";
+		StringBuilder errors = new StringBuilder();
 		if (br.hasErrors()) {
 			List<FieldError> error = br.getFieldErrors();
 			for (FieldError err : error)
-				errors += err.getDefaultMessage();
-			model.addAttribute("error", errors);
+				errors.append(err.getDefaultMessage());
+			model.addAttribute("error", errors.toString());
 			model.addAttribute("userError", user);
 			return "registration";
 		} else {
 			try {
+				user.setAdmin(false);
 				user.setPassword(KeyGeneration.encrypt(user.getPassword()));
 				user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
 			} catch (IOException e) {
@@ -197,7 +190,7 @@ public class UserController {
 	}
 
 	@PostMapping("/userDataController")
-	public String UserData(@RequestParam int id, Model model, HttpSession session, HttpServletResponse response) {
+	public String userData(@RequestParam int id, Model model, HttpSession session, HttpServletResponse response) {
 		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
 		// origin server
 		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any circumstance
@@ -244,7 +237,7 @@ public class UserController {
 	@PostMapping("/usersController")
 	public String addUsers(@RequestPart MultipartFile excelFile, Model model) throws IOException {
 		String fileType = excelFile.getContentType();
-		if (fileType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+		if (fileType != null && fileType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
 			InputStream out = excelFile.getInputStream();
 			try (XSSFWorkbook wb = new XSSFWorkbook(out)) {
 				XSSFSheet sheet = wb.getSheetAt(0);
@@ -321,14 +314,14 @@ public class UserController {
 	@PostMapping(path = "/updateController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String update(@Valid @ModelAttribute User user, BindingResult br, @RequestPart MultipartFile user_photo,
 			@RequestParam String[] address_id, HttpSession session, Model model) {
-		String errors = "";
+		StringBuilder errors = new StringBuilder();
 		User oldData = service.getUserData(user.getId());
 		if (br.hasErrors()) {
 			List<FieldError> error = br.getFieldErrors();
 			for (FieldError err : error)
-				errors += err.getDefaultMessage();
+				errors.append(err.getDefaultMessage());
 			user.setEmail(oldData.getEmail());
-			model.addAttribute("error", errors);
+			model.addAttribute("error", errors.toString());
 			model.addAttribute("userError", user);
 			return "registration";
 		}
@@ -352,8 +345,10 @@ public class UserController {
 		}
 		service.updateUser(user);
 		log.info(user.getId() + ": Data updated");
-		if (session != null && session.getAttribute("userSession") != null)
+		if (session != null && session.getAttribute("userSession") != null) {
+			session.setAttribute("userSession", user);
 			return "redirect:home";
+		}
 		else
 			return "redirect:dashboard";
 	}

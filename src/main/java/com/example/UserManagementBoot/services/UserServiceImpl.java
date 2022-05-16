@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User getUserData(int id) {
-		User user = dao.findById(id).get();
+		User user = dao.getById(id);
 		user.setPassword(KeyGeneration.decrypt(user.getPassword()));
 		return user;
 	}
@@ -92,17 +92,17 @@ public class UserServiceImpl implements UserService {
 		for (Address address : user.getAddresses()) {
 			address.setUser(user);
 		}
-		List<Integer> address_id = new ArrayList<>();
+		List<Integer> addressId = new ArrayList<>();
 		List<Address> oldAddresses = getUserData(user.getId()).getAddresses();
 		for (Address oldAddress : oldAddresses) {
 			Address newAddress = user.getAddresses().stream()
 					.filter(address -> address.getAddress_id() == oldAddress.getAddress_id()).findAny().orElse(null);
 			if (newAddress == null) {
-				address_id.add(oldAddress.getAddress_id());
+				addressId.add(oldAddress.getAddress_id());
 			}
 		}
 		dao.save(user);
-		addressDao.deleteAllById(address_id);
+		addressDao.deleteAllById(addressId);
 	}
 
 	@Override

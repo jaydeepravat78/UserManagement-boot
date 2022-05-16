@@ -28,15 +28,13 @@ public class User implements Serializable {
 	private int id;
 	
 	@NotBlank(message = "*Name cannot be empty<br>")
-	@Pattern(regexp = "^[a-zA-Z]+$", message = "*Please enter a valid name<br>")
+	@Pattern(regexp = "^[a-zA-Z ]+$", message = "*Please enter a valid name<br>")
 	public String name;
 	
-//	@NotBlank(message = "*Email cannot be empty<br>")
 	@Pattern(regexp = "^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$", message = "*Please enter a valid email<br>")
 	private String email;
 	
 	@NotBlank(message = "*Password cannot be empty<br>")
-//	@Pattern(regexp = "^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,30}+$", message = "*Password should have minimum 8 and maximum 30 character with a number, alphabet character and a special character<br>")
 	private String password;
 	
 	@NotBlank(message = "*Phone number cannot be empty<br>")

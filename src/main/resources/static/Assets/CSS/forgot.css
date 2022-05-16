@@ -1,0 +1,22 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	font-family: 'Poppins', sans-serif;
+}
+
+form {
+	width: 70%;
+	display: block;
+	margin: 30px auto;
+	background-color: aliceblue;
+	padding: 20px;
+	border-radius: 40px;
+}
+
+h2 {
+	text-transform: uppercase;
+}
+
+.error {
+	color: red;
+}

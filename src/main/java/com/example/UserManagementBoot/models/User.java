@@ -26,17 +26,17 @@ public class User implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@NotBlank(message = "*Name cannot be empty<br>")
 	@Pattern(regexp = "^[a-zA-Z ]+$", message = "*Please enter a valid name<br>")
 	public String name;
-	
+
 	@Pattern(regexp = "^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$", message = "*Please enter a valid email<br>")
 	private String email;
-	
+
 	@NotBlank(message = "*Password cannot be empty<br>")
 	private String password;
-	
+
 	@NotBlank(message = "*Phone number cannot be empty<br>")
 	@Pattern(regexp = "[7-9][0-9]{9}", message = "*Please enter a valid phone number<br>")
 	private String phone;
@@ -51,11 +51,10 @@ public class User implements Serializable {
 	@Lob
 	private String profilePic;
 	private boolean isAdmin;
-	
+
 	@Valid
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Address> addresses;
-	
 
 	public boolean isAdmin() {
 		return isAdmin;

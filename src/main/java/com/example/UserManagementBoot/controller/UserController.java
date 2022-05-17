@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -46,11 +46,15 @@ public class UserController {
 	@Autowired
 	UserService service;
 
-	private static final Logger log = Logger.getLogger(UserController.class);
+	private static final Logger log = LogManager.getLogger(UserController.class);
+	private static final String HOMEPAGE = "home";
+	private static final String DAHSBOARDPAGE = "dashboard";
+	private static final String INDEXPAGE = "index";
+	private static final String REGISTRATIONPAGE = "registration";
+	private static final String FORGOTPAGE = "forgot";
 
 	@GetMapping("/")
 	public String defaultUrl(HttpSession session, HttpServletResponse response) {
-
 		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
 															// origin server
 		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
@@ -58,11 +62,11 @@ public class UserController {
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("userSession") != null)
-			return "redirect:home";
+			return "redirect:" + HOMEPAGE;
 		else if (session != null && session.getAttribute("admin") != null)
-			return "redirect:dashboard";
+			return "redirect:" + DAHSBOARDPAGE;
 		else
-			return "index";
+			return INDEXPAGE;
 	}
 
 	@GetMapping("/index")
@@ -74,22 +78,22 @@ public class UserController {
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("userSession") != null)
-			return "redirect:home";
+			return "redirect:" + HOMEPAGE;
 		else if (session != null && session.getAttribute("admin") != null)
-			return "redirect:dashboard";
+			return "redirect:" + DAHSBOARDPAGE;
 		else {
-			return "index";
+			return  INDEXPAGE;
 		}
 	}
 
 	@GetMapping("/registration")
 	public String register() {
-		return "registration";
+		return REGISTRATIONPAGE;
 	}
 
 	@GetMapping("/forgot")
 	public String forgot() {
-		return "forgot";
+		return FORGOTPAGE;
 	}
 
 	@GetMapping("/home")
@@ -102,9 +106,9 @@ public class UserController {
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("userSession") != null)
-			return "home";
+			return HOMEPAGE;
 		else
-			return "redirect:index";
+			return "redirect:" + INDEXPAGE;
 	}
 
 	@GetMapping("/dashboard")
@@ -117,9 +121,9 @@ public class UserController {
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("admin") != null)
-			return "dashboard";
+			return DAHSBOARDPAGE;
 		else
-			return "redirect:index";
+			return "redirect:" + INDEXPAGE;
 	}
 
 	@PostMapping(path = "/registerController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
@@ -132,7 +136,7 @@ public class UserController {
 				errors.append(err.getDefaultMessage());
 			model.addAttribute("error", errors.toString());
 			model.addAttribute("userError", user);
-			return "registration";
+			return REGISTRATIONPAGE;
 		} else {
 			try {
 				user.setAdmin(false);
@@ -144,8 +148,8 @@ public class UserController {
 			service.addUser(user);
 			log.info(user.getEmail() + " signed up");
 			if (session != null && session.getAttribute("admin") != null)
-				return "redirect:dashboard";
-			return "index";
+				return  "redirect:" + DAHSBOARDPAGE;
+			return "redirect:" +INDEXPAGE;
 		}
 	}
 
@@ -159,22 +163,21 @@ public class UserController {
 															// circumstance
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
-		BasicConfigurator.configure();
 		User user = service.getUser(email, password);
 		if (user != null) {
 			if (user.isAdmin()) {
 				log.info("Admin logged in: " + user.getId());
 				session.setAttribute("admin", user);
-				return "redirect:dashboard";
+				return "redirect:" + DAHSBOARDPAGE;
 			} else {
 				log.info("User logged in: " + user.getId());
 				session.setAttribute("userSession", user);
-				return "redirect:home";
+				return "redirect:" + HOMEPAGE;
 			}
 		} else {
 			model.addAttribute("errorMessage", "*Invalid user email or password");
 			model.addAttribute("errorEmail", email);
-			return "index";
+			return INDEXPAGE;
 		}
 	}
 
@@ -186,7 +189,7 @@ public class UserController {
 		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		session.invalidate();
-		return "redirect:index";
+		return "redirect:" + INDEXPAGE;
 	}
 
 	@PostMapping("/userDataController")
@@ -199,9 +202,9 @@ public class UserController {
 		if (session != null && (session.getAttribute("userSession") != null || session.getAttribute("admin") != null)) {
 			User userData = service.getUserData(id);
 			model.addAttribute("userData", userData);
-			return "registration";
+			return REGISTRATIONPAGE;
 		} else {
-			return "redirect:index";
+			return "redirect:" + INDEXPAGE;
 		}
 	}
 
@@ -302,7 +305,7 @@ public class UserController {
 			log.info("error");
 			model.addAttribute("errorMessage", "Please enter a excel file");
 		}
-		return "dashboard";
+		return DAHSBOARDPAGE;
 	}
 
 	@PostMapping(path = "/emailCheckController")
@@ -323,7 +326,7 @@ public class UserController {
 			user.setEmail(oldData.getEmail());
 			model.addAttribute("error", errors.toString());
 			model.addAttribute("userError", user);
-			return "registration";
+			return REGISTRATIONPAGE;
 		}
 		user.setEmail(oldData.getEmail());
 		user.setPassword(KeyGeneration.encrypt(user.getPassword()));
@@ -347,21 +350,20 @@ public class UserController {
 		log.info(user.getId() + ": Data updated");
 		if (session != null && session.getAttribute("userSession") != null) {
 			session.setAttribute("userSession", user);
-			return "redirect:home";
+			return "redirect:" + HOMEPAGE;
 		}
 		else
-			return "redirect:dashboard";
+			return "redirect:" + DAHSBOARDPAGE;
 	}
 
 	@PostMapping("/forgotController")
 	public String forgot(@ModelAttribute User user, Model model) {
 		if (service.updatePassword(user)) {
 			log.info(user.getEmail() + ": " + "Updated password");
-			return "redirect:index";
+			return "redirect:" + INDEXPAGE;
 		} else {
 			model.addAttribute("error", "Please enter correct details");
-			return "forgot";
+			return FORGOTPAGE;
 		}
 	}
-
 }

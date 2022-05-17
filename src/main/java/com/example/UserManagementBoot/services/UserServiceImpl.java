@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public List<User> getAllUser() {
-		return dao.findByIsAdminFalse();
+		return  dao.findByIsAdminFalse();
 	}
 
 	@Override

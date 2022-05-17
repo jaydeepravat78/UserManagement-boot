@@ -45,8 +45,9 @@
 					<input type="text" name="email" class="form-control"
 						id="inputEmail" maxlength="45"
 						placeholder="sample@gmail.com" 
-						<#if userData?? && userData.email??>value="${userData.email}" disabled</#if>
-						<#if userError?? && userError.email??>value="${userError.email}" disabled</#if>
+						<#if userData?? && userData.email??>value="${userData.email}"</#if>
+						<#if userError?? && userError.email??>value="${userError.email}"</#if>
+						<#if (userSession?? || admin??)>disabled</#if>
 						>
 				</div>
 			</div>
@@ -105,26 +106,26 @@
 				<div class="col-sm-6">
 					<label class="checkbox-inline"> <input type="checkbox"
 						id="inputLang1" name="lang" value="Java" 
-						<#if userData??> <#list userData.lang as l> <#if l == 'Java'> checked='checked' </#if> </#list> </#if> 
-						<#if userError??> <#list userError.lang as l> <#if l == 'Java'> checked='checked' </#if> </#list> </#if>
+						<#if userData?? && userData.lang??> <#list userData.lang as l> <#if l == 'Java'> checked='checked' </#if> </#list> </#if> 
+						<#if userError?? && userError.lang??> <#list userError.lang as l> <#if l == 'Java'> checked='checked' </#if> </#list> </#if>
 						>
 						Java
 					</label> <label class="checkbox-inline"> <input type="checkbox"
 						id="inputLang2" name="lang" value="C++" 
-						<#if userData??> <#list userData.lang as l> <#if l == 'C++'> checked='checked' </#if> </#list> </#if> 
-						<#if userError??> <#list userError.lang as l> <#if l == 'C++'> checked='checked' </#if> </#list> </#if>
+						<#if userData?? && userData.lang??> <#list userData.lang as l> <#if l == 'C++'> checked='checked' </#if> </#list> </#if> 
+						<#if userError?? && userError.lang??> <#list userError.lang as l> <#if l == 'C++'> checked='checked' </#if> </#list> </#if>
 						>
 						C++
 					</label> <label class="checkbox-inline"> <input type="checkbox"
 						id="inputLang3" name="lang" value="Python" 
-						<#if userData??> <#list userData.lang as l> <#if l == 'Python'> checked='checked' </#if> </#list> </#if> 
-						<#if userError??> <#list userError.lang as l> <#if l == 'Python'> checked='checked' </#if> </#list> </#if>
+						<#if userData?? && userData.lang??> <#list userData.lang as l> <#if l == 'Python'> checked='checked' </#if> </#list> </#if> 
+						<#if userError?? && userError.lang??> <#list userError.lang as l> <#if l == 'Python'> checked='checked' </#if> </#list> </#if>
 						>
 						Python
 					</label> <label class="checkbox-inline"> <input type="checkbox"
 						id="inputLang4" name="lang" value="Kotlin" 
-						<#if userData??> <#list userData.lang as l> <#if l == 'Kotlin'> checked='checked' </#if> </#list> </#if> 
-						<#if userError??> <#list userError.lang as l> <#if l == 'Kotlin'> checked='checked' </#if> </#list> </#if>
+						<#if userData?? && userData.lang??> <#list userData.lang as l> <#if l == 'Kotlin'> checked='checked' </#if> </#list> </#if> 
+						<#if userError?? && userError.lang??> <#list userError.lang as l> <#if l == 'Kotlin'> checked='checked' </#if> </#list> </#if>
 						>
 						Kotlin 
 					</label>

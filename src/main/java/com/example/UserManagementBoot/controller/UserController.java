@@ -128,7 +128,7 @@ public class UserController {
 
 	@PostMapping(path = "/registerController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String registration(@Valid @ModelAttribute User user, BindingResult br,
-			@RequestPart MultipartFile user_photo, HttpSession session, Model model) {
+			@RequestPart MultipartFile user_photo, @RequestParam String isadmin, HttpSession session, Model model) {
 		StringBuilder errors = new StringBuilder();
 		if (br.hasErrors()) {
 			List<FieldError> error = br.getFieldErrors();
@@ -142,6 +142,10 @@ public class UserController {
 				user.setAdmin(false);
 				user.setPassword(KeyGeneration.encrypt(user.getPassword()));
 				user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
+				if(isadmin.equals("true"))
+					user.setAdmin(true);
+				else
+					user.setAdmin(false);
 			} catch (IOException e) {
 				log.error(e);
 			}
@@ -316,6 +320,7 @@ public class UserController {
 
 	@PostMapping(path = "/updateController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String update(@Valid @ModelAttribute User user, BindingResult br, @RequestPart MultipartFile user_photo,
+			@RequestParam String isadmin,
 			@RequestParam String[] address_id, HttpSession session, Model model) {
 		StringBuilder errors = new StringBuilder();
 		User oldData = service.getUserData(user.getId());
@@ -330,6 +335,10 @@ public class UserController {
 		}
 		user.setEmail(oldData.getEmail());
 		user.setPassword(KeyGeneration.encrypt(user.getPassword()));
+		if(isadmin.equals("true"))
+			user.setAdmin(true);
+		else
+			user.setAdmin(false);
 		if (user_photo.isEmpty()) {
 			user.setProfilePic(oldData.getProfilePic());
 		} else {

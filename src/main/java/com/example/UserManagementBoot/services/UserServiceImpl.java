@@ -32,13 +32,9 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User getUser(String email, String password) {
-		List<User> userData = dao.findDistinctByEmail(email);
-		if (!userData.isEmpty()) {
-			User user = userData.get(0);
-			if (password.equals(KeyGeneration.decrypt(user.getPassword())))
-				return user;
-			else
-				return null;
+		User userData = dao.findDistinctByEmail(email);
+		if (userData != null && password.equals(KeyGeneration.decrypt(userData.getPassword()))) {			
+			return userData;
 		} else {
 			return null;
 		}
@@ -107,12 +103,12 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean checkEmail(String email) {
-		return dao.findDistinctByEmail(email).isEmpty();
+		return dao.findDistinctByEmail(email) == null;
 	}
 
 	@Override
 	public boolean updatePassword(User user) {
-		User userData = dao.findDistinctByEmail(user.getEmail()).get(0);
+		User userData = dao.findDistinctByEmail(user.getEmail());
 		if (userData != null && user.getSecQues().equals(userData.getSecQues())
 				&& user.getGame().equals(userData.getGame())) {
 			userData.setPassword(KeyGeneration.encrypt(user.getPassword()));

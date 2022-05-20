@@ -102,6 +102,22 @@
 				</div>
 			</div>
 			<div class="form-group">
+				<label for="inputRole" class="col-sm-2 control-label">Role</label>
+				<div class="col-sm-6">
+					<label class="radio-inline"> <input type="radio"
+						id="inputGender1" name="isadmin" value="true"
+						<#if userData?? && userData.isAdmin()?? && userData.isAdmin()> checked </#if>
+						<#if userError?? && userError.isAdmin()?? && userError.isAdmin()> checked </#if>
+						>Admin
+					</label> <label class="radio-inline"> <input type="radio"
+						id="inputGender2" name="isadmin" value="false" 
+						<#if userData?? && userData.isAdmin()?? && !userData.isAdmin()> checked </#if>
+						<#if userError?? && userError.isAdmin()?? && !userError.isAdmin()> checked </#if>
+						>User
+					</label>
+				</div>
+			</div>
+			<div class="form-group">
 				<label for="inputLang" class="col-sm-2 control-label">Language</label>
 				<div class="col-sm-6">
 					<label class="checkbox-inline"> <input type="checkbox"

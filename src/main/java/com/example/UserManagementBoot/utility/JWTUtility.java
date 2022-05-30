@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class JWTUtility {
+public class JwtUtility {
 	private static final String SECRET_KEY = "secret";
 
 	public String extractUsername(String token) {
@@ -38,6 +38,7 @@ public class JWTUtility {
 
 	public String generateToken(UserDetails userDetails) {
 		Map<String, Object> claims = new HashMap<>();
+		claims.put("Roles", userDetails.getAuthorities());
 		return createToken(claims, userDetails.getUsername());
 	}
 

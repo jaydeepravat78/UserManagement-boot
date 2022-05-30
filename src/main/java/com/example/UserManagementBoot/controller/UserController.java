@@ -7,7 +7,6 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -39,6 +38,7 @@ import com.example.UserManagementBoot.models.Address;
 import com.example.UserManagementBoot.models.CustomUserDetails;
 import com.example.UserManagementBoot.models.User;
 import com.example.UserManagementBoot.services.UserService;
+import com.example.UserManagementBoot.utility.JwtUtility;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -51,6 +51,9 @@ public class UserController {
 	
 	@Autowired
 	PasswordEncoder encoder;
+	
+	@Autowired
+	JwtUtility jwtUtility;
 
 	private static final Logger log = LogManager.getLogger(UserController.class);
 	private static final String HOMEPAGE = "home";
@@ -134,11 +137,12 @@ public class UserController {
 	}
 
 	@GetMapping("/loginController")
-	public String login(Model model, HttpSession session,
-			HttpServletResponse response, HttpServletRequest request) {
+	public String login(HttpSession session, HttpServletResponse response) {
 		
 		CustomUserDetails details = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		User user = service.getUser(details.getUsername(), details.getPassword());
+		User user = details.getUser();
+		String token = jwtUtility.generateToken(details);
+		response.addHeader("Authorization", "Bearer " + token);
 		if (user != null) {
 			if (user.getRole().equals("ROLE_ADMIN")) {
 				log.info("Admin logged in: " + user.getId());
@@ -150,8 +154,6 @@ public class UserController {
 				return "redirect:" + HOMEPAGE;
 			}
 		} else {
-			model.addAttribute("errorMessage", "*Invalid user email or password");
-			model.addAttribute("errorEmail", details.getUsername());
 			return INDEXPAGE;
 		}
 	}

@@ -10,6 +10,6 @@ public interface UserDao extends JpaRepository<User, Integer> {
 	
 	User findDistinctByEmail(String email);
 	
-	List<User> findByIsAdminFalse();
+	List<User> findByRole(String role);
 	
 }

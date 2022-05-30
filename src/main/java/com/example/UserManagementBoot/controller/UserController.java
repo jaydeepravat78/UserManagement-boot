@@ -7,6 +7,7 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -20,6 +21,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,9 +36,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.UserManagementBoot.models.Address;
+import com.example.UserManagementBoot.models.CustomUserDetails;
 import com.example.UserManagementBoot.models.User;
 import com.example.UserManagementBoot.services.UserService;
-import com.example.UserManagementBoot.utility.KeyGeneration;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -45,6 +48,9 @@ public class UserController {
 
 	@Autowired
 	UserService service;
+	
+	@Autowired
+	PasswordEncoder encoder;
 
 	private static final Logger log = LogManager.getLogger(UserController.class);
 	private static final String HOMEPAGE = "home";
@@ -55,12 +61,6 @@ public class UserController {
 
 	@GetMapping("/")
 	public String defaultUrl(HttpSession session, HttpServletResponse response) {
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
-															// circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("userSession") != null)
 			return "redirect:" + HOMEPAGE;
 		else if (session != null && session.getAttribute("admin") != null)
@@ -71,12 +71,6 @@ public class UserController {
 
 	@GetMapping("/index")
 	public String index(HttpSession session, HttpServletResponse response) {
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
-															// circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && session.getAttribute("userSession") != null)
 			return "redirect:" + HOMEPAGE;
 		else if (session != null && session.getAttribute("admin") != null)
@@ -95,40 +89,27 @@ public class UserController {
 	public String forgot() {
 		return FORGOTPAGE;
 	}
+	
+	@GetMapping("/failedLogin")
+	public String failedLogin(Model model) {
+		model.addAttribute("errorMessage", "*Invalid user email or password");
+		return INDEXPAGE;
+	}
 
 	@GetMapping("/home")
 	public String home(HttpSession session, HttpServletResponse response) {
-
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
-															// circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
-		if (session != null && session.getAttribute("userSession") != null)
-			return HOMEPAGE;
-		else
-			return "redirect:" + INDEXPAGE;
+			return HOMEPAGE;		
 	}
 
 	@GetMapping("/dashboard")
 	public String admindashboard(HttpSession session, HttpServletResponse response) {
-
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
-															// circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
-		if (session != null && session.getAttribute("admin") != null)
-			return DAHSBOARDPAGE;
-		else
-			return "redirect:" + INDEXPAGE;
+			return  DAHSBOARDPAGE;
 	}
 
 	@PostMapping(path = "/registerController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String registration(@Valid @ModelAttribute User user, BindingResult br,
-			@RequestPart MultipartFile user_photo, @RequestParam String isadmin, HttpSession session, Model model) {
+			@RequestPart MultipartFile user_photo, @RequestParam String isadmin, HttpSession session, Model model)
+			throws IOException {
 		if (br.hasErrors()) {
 			StringBuilder errors = new StringBuilder();
 			List<FieldError> error = br.getFieldErrors();
@@ -138,17 +119,12 @@ public class UserController {
 			model.addAttribute("userError", user);
 			return REGISTRATIONPAGE;
 		} else {
-			try {
-				user.setAdmin(false);
-				user.setPassword(KeyGeneration.encrypt(user.getPassword()));
-				user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
-				if (isadmin.equals("true"))
-					user.setAdmin(true);
-				else
-					user.setAdmin(false);
-			} catch (IOException e) {
-				log.error(e);
-			}
+			user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
+			user.setPassword(encoder.encode(user.getPassword()));
+			if (isadmin.equals("true"))
+				user.setRole("ROLE_ADMIN");
+			else
+				user.setRole("ROLE_USER");
 			service.addUser(user);
 			log.info(user.getEmail() + " signed up");
 			if (session != null && session.getAttribute("admin") != null)
@@ -157,19 +133,14 @@ public class UserController {
 		}
 	}
 
-	@PostMapping("/loginController")
-	public String login(@RequestParam String email, @RequestParam String password, Model model, HttpSession session,
-			HttpServletResponse response) {
-
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any
-															// circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
-		User user = service.getUser(email, password);
+	@GetMapping("/loginController")
+	public String login(Model model, HttpSession session,
+			HttpServletResponse response, HttpServletRequest request) {
+		
+		CustomUserDetails details = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = service.getUser(details.getUsername(), details.getPassword());
 		if (user != null) {
-			if (user.isAdmin()) {
+			if (user.getRole().equals("ROLE_ADMIN")) {
 				log.info("Admin logged in: " + user.getId());
 				session.setAttribute("admin", user);
 				return "redirect:" + DAHSBOARDPAGE;
@@ -180,29 +151,13 @@ public class UserController {
 			}
 		} else {
 			model.addAttribute("errorMessage", "*Invalid user email or password");
-			model.addAttribute("errorEmail", email);
+			model.addAttribute("errorEmail", details.getUsername());
 			return INDEXPAGE;
 		}
 	}
 
-	@GetMapping("/logoutController")
-	public String logout(HttpSession session, HttpServletResponse response) {
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-															// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
-		session.invalidate();
-		return "redirect:" + INDEXPAGE;
-	}
-
 	@PostMapping("/userDataController")
 	public String userData(@RequestParam int id, Model model, HttpSession session, HttpServletResponse response) {
-		response.setHeader("Cache-Control", "no-cache"); // Forces caches to obtain a new copy of the page from the
-		// origin server
-		response.setHeader("Cache-Control", "no-store"); // Directs caches not to store the page under any circumstance
-		response.setDateHeader("Expires", 0); // Causes the proxy cache to see the page as "stale"
-		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 backward compatibility
 		if (session != null && (session.getAttribute("userSession") != null || session.getAttribute("admin") != null)) {
 			User userData = service.getUserData(id);
 			model.addAttribute("userData", userData);
@@ -320,7 +275,8 @@ public class UserController {
 
 	@PostMapping(path = "/updateController", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public String update(@Valid @ModelAttribute User user, BindingResult br, @RequestPart MultipartFile user_photo,
-			@RequestParam String isadmin, @RequestParam String[] address_id, HttpSession session, Model model) {
+			@RequestParam String isadmin, @RequestParam String[] address_id, HttpSession session, Model model)
+			throws IOException {
 		User oldData = service.getUserData(user.getId());
 		if (br.hasErrors()) {
 			StringBuilder errors = new StringBuilder();
@@ -333,19 +289,15 @@ public class UserController {
 			return REGISTRATIONPAGE;
 		}
 		user.setEmail(oldData.getEmail());
-		user.setPassword(KeyGeneration.encrypt(user.getPassword()));
+		user.setPassword(encoder.encode(user.getPassword()));
 		if (isadmin.equals("true"))
-			user.setAdmin(true);
+			user.setRole("ROLE_ADMIN");
 		else
-			user.setAdmin(false);
+			user.setRole("ROLE_USER");
 		if (user_photo.isEmpty()) {
 			user.setProfilePic(oldData.getProfilePic());
 		} else {
-			try {
-				user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
-			} catch (IOException e) {
-				log.error(e);
-			}
+			user.setProfilePic(Base64.getEncoder().encodeToString(user_photo.getBytes()));
 		}
 		List<Address> addresses = user.getAddresses();
 		for (int i = 0; i < address_id.length; i++) {
@@ -365,6 +317,7 @@ public class UserController {
 
 	@PostMapping("/forgotController")
 	public String forgot(@ModelAttribute User user, Model model) {
+		user.setPassword(encoder.encode(user.getPassword()));
 		if (service.updatePassword(user)) {
 			log.info(user.getEmail() + ": " + "Updated password");
 			return "redirect:" + INDEXPAGE;

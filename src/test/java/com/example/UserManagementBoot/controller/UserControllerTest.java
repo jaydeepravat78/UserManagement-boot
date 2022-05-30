@@ -185,7 +185,7 @@ class UserControllerTest {
 				.flashAttr("user", user).param("isadmin", "false").sessionAttr("admin", new User()))
 				.andExpect(redirectedUrl("dashboard"));
 	}
-	
+
 	@Test
 	void registrationTestError() throws Exception {
 		FileInputStream file = new FileInputStream(
@@ -228,7 +228,7 @@ class UserControllerTest {
 		String email = "jay@gmail.com";
 		String password = "jay@1234";
 		User user = new User();
-		user.setAdmin(true);
+		user.setRole("ROLE_ADMIN");
 		when(service.getUser(email, password)).thenReturn(user);
 		mockMvc.perform(post("/loginController").param("email", email).param("password", password))
 				.andExpect(redirectedUrl("dashboard"));
@@ -239,7 +239,7 @@ class UserControllerTest {
 		String email = "jay@gmail.com";
 		String password = "jay@1234";
 		User user = new User();
-		user.setAdmin(false);
+		user.setRole("ROLE_USER");
 		when(service.getUser(email, password)).thenReturn(user);
 		mockMvc.perform(post("/loginController").param("email", email).param("password", password))
 				.andExpect(redirectedUrl("home"));
@@ -344,7 +344,8 @@ class UserControllerTest {
 	void addUsersTestWithoutError() throws Exception {
 		when(service.addAllUser(anyList())).thenReturn("");
 		FileInputStream file = new FileInputStream("G:\\Excel Practise\\Course 1\\Week 1\\Dummy.xlsx");
-		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file);
+		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file);
 		mockMvc.perform(multipart("/usersController").file(excelFile)).andExpect(status().isOk());
 	}
 
@@ -352,24 +353,26 @@ class UserControllerTest {
 	void addUsersTestWithError() throws Exception {
 		when(service.addAllUser(anyList())).thenReturn("Error");
 		FileInputStream file = new FileInputStream("G:\\Excel Practise\\Course 1\\Week 1\\Dummy.xlsx");
-		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file);
+		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", file);
 		mockMvc.perform(multipart("/usersController").file(excelFile)).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	void addUserTestWithFileNotFoundError() throws Exception {
 		when(service.addAllUser(anyList())).thenReturn("Error");
 		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "".getBytes());
 		mockMvc.perform(multipart("/usersController").file(excelFile)).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	void addUserTestWithNotAnExcelFile() throws Exception {
 		when(service.addAllUser(anyList())).thenReturn("Error");
-		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx", MediaType.TEXT_PLAIN_VALUE, "abc".getBytes());
+		MockMultipartFile excelFile = new MockMultipartFile("excelFile", "Dummy.xlsx", MediaType.TEXT_PLAIN_VALUE,
+				"abc".getBytes());
 		mockMvc.perform(multipart("/usersController").file(excelFile)).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	void checkEmailTestWhenEmailExists() throws Exception {
 		String email = "jay@gmail.com";
@@ -417,12 +420,11 @@ class UserControllerTest {
 		FileInputStream file = new FileInputStream(
 				"C:\\Users\\usa\\OneDrive\\Pictures\\Saved Pictures\\45300ad3107192f2a92bb76a66b2d9de.jpg");
 		MockMultipartFile user_photo = new MockMultipartFile("user_photo", file);
-		mockMvc.perform(multipart("/updateController").file(user_photo)
-				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.MULTIPART_FORM_DATA_VALUE)
-				.flashAttr("user", user).param("isadmin", "false").param("address_id", "1").sessionAttr("userSession", new User()))
-				.andExpect(redirectedUrl("home"));
+		mockMvc.perform(multipart("/updateController").file(user_photo).contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+				.accept(MediaType.MULTIPART_FORM_DATA_VALUE).flashAttr("user", user).param("isadmin", "false")
+				.param("address_id", "1").sessionAttr("userSession", new User())).andExpect(redirectedUrl("home"));
 	}
-	
+
 	@Test
 	void updateUserDataTestWithError() throws Exception {
 		User user = new User();
@@ -455,12 +457,11 @@ class UserControllerTest {
 		FileInputStream file = new FileInputStream(
 				"C:\\Users\\usa\\OneDrive\\Pictures\\Saved Pictures\\45300ad3107192f2a92bb76a66b2d9de.jpg");
 		MockMultipartFile user_photo = new MockMultipartFile("user_photo", file);
-		mockMvc.perform(multipart("/updateController").file(user_photo)
-				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.MULTIPART_FORM_DATA_VALUE)
-				.flashAttr("user", user).param("isadmin", "false").param("address_id", "1").sessionAttr("userSession", new User()))
-				.andExpect(status().isOk());
+		mockMvc.perform(multipart("/updateController").file(user_photo).contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+				.accept(MediaType.MULTIPART_FORM_DATA_VALUE).flashAttr("user", user).param("isadmin", "false")
+				.param("address_id", "1").sessionAttr("userSession", new User())).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	void updateUserDataTestToUpdateAdmin() throws Exception {
 		User user = new User();
@@ -492,12 +493,11 @@ class UserControllerTest {
 		when(service.getUserData(user.getId())).thenReturn(expectedUser);
 		doNothing().when(service).updateUser(user);
 		MockMultipartFile user_photo = new MockMultipartFile("user_photo", "".getBytes());
-		mockMvc.perform(multipart("/updateController").file(user_photo)
-				.contentType(MediaType.MULTIPART_FORM_DATA_VALUE).accept(MediaType.MULTIPART_FORM_DATA_VALUE)
-				.flashAttr("user", user).param("isadmin", "true").param("address_id", "1").sessionAttr("admin", new User()))
-				.andExpect(redirectedUrl("dashboard"));
+		mockMvc.perform(multipart("/updateController").file(user_photo).contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+				.accept(MediaType.MULTIPART_FORM_DATA_VALUE).flashAttr("user", user).param("isadmin", "true")
+				.param("address_id", "1").sessionAttr("admin", new User())).andExpect(redirectedUrl("dashboard"));
 	}
-	
+
 	@Test
 	void forgotPasswordTestForValidUser() throws Exception {
 		User user = new User();

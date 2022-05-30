@@ -21,7 +21,7 @@
 		<div class="container">
 			<nav class="text-right">
 				<a href="registration" class="btn btn-success">Add User</a> <a
-					href="logoutController" class="btn btn-danger">Logout</a>
+					href="logout" class="btn btn-danger">Logout</a>
 			</nav>
 			<br>
 			<table id="users-table" class="table table-striped">

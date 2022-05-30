@@ -18,7 +18,7 @@
 		<div class="error text-center">
 			<#if errorMessage??> ${errorMessage} </#if>
 		</div>
-		<form class="form-horizontal uform" action="loginController"
+		<form class="form-horizontal uform" action="/login"
 			method="Post" id="loginForm">
 			<h2 class="text-center">Login</h2>
 			<div class="form-group">

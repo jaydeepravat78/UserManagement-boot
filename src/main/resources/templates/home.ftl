@@ -25,7 +25,7 @@
 	<#include "header.ftl">
 		<div class="container text-center">
 			<nav class="text-right">
-				<a href="logoutController" class="btn btn-danger">Logout</a>
+				<a href="logout" class="btn btn-danger">Logout</a>
 			</nav>
 			<h2 class="text-center">
 				Welcome

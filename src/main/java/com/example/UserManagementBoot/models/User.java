@@ -50,18 +50,19 @@ public class User implements Serializable {
 	private String secQues;
 	@Lob
 	private String profilePic;
-	private boolean isAdmin;
+
+	private String role;
 
 	@Valid
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Address> addresses;
 
-	public boolean isAdmin() {
-		return isAdmin;
+	public String getRole() {
+		return role;
 	}
 
-	public void setAdmin(boolean isAdmin) {
-		this.isAdmin = isAdmin;
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	public String getSecQues() {

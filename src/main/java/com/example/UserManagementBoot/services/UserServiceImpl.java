@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.UserManagementBoot.jpadao.AddressDao;
 import com.example.UserManagementBoot.jpadao.UserDao;
 import com.example.UserManagementBoot.models.Address;
+import com.example.UserManagementBoot.models.CustomUserDetails;
 import com.example.UserManagementBoot.models.User;
 import com.example.UserManagementBoot.utility.KeyGeneration;
 import com.example.UserManagementBoot.utility.Validation;
@@ -33,22 +36,17 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUser(String email, String password) {
 		User userData = dao.findDistinctByEmail(email);
-		if (userData != null && password.equals(KeyGeneration.decrypt(userData.getPassword()))) {			
-			return userData;
-		} else {
-			return null;
-		}
+		return userData;
 	}
 
 	@Override
 	public List<User> getAllUser() {
-		return  dao.findByIsAdminFalse();
+		return  dao.findByRole("ROLE_USER");
 	}
 
 	@Override
 	public User getUserData(int id) {
 		User user = dao.getById(id);
-		user.setPassword(KeyGeneration.decrypt(user.getPassword()));
 		return user;
 	}
 
@@ -111,10 +109,18 @@ public class UserServiceImpl implements UserService {
 		User userData = dao.findDistinctByEmail(user.getEmail());
 		if (userData != null && user.getSecQues().equals(userData.getSecQues())
 				&& user.getGame().equals(userData.getGame())) {
-			userData.setPassword(KeyGeneration.encrypt(user.getPassword()));
 			dao.save(userData);
 			return true;
 		}
 		return false;
+	}
+	
+	
+	@Override
+	public UserDetails loadUserByUsername(String userEamil) throws UsernameNotFoundException {
+		User user = dao.findDistinctByEmail(userEamil);
+		if(user == null)
+			throw new UsernameNotFoundException("User not found");
+		return new CustomUserDetails(user);
 	}
 }

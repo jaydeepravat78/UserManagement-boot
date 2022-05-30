@@ -130,10 +130,10 @@ class UserServiceImplTest {
 		user.setName("jay");
 		List<User> expectedUsers = new ArrayList<>();
 		expectedUsers.add(user);
-		when(userDao.findByIsAdminFalse()).thenReturn(expectedUsers);
+		when(userDao.findByRole("USER")).thenReturn(expectedUsers);
 		List<User> users = service.getAllUser();
 		assertEquals(expectedUsers, users);
-		verify(userDao, atLeastOnce()).findByIsAdminFalse();
+		verify(userDao, atLeastOnce()).findByRole(anyString());
 	}
 
 	@Test

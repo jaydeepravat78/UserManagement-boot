@@ -47,7 +47,7 @@
 						placeholder="sample@gmail.com" 
 						<#if userData?? && userData.email??>value="${userData.email}"</#if>
 						<#if userError?? && userError.email??>value="${userError.email}"</#if>
-						<#if (userSession?? || admin??)>disabled</#if>
+						<#if (userSession?? || admin??) && userData??>disabled</#if>
 						>
 				</div>
 			</div>
@@ -106,13 +106,13 @@
 				<div class="col-sm-6">
 					<label class="radio-inline"> <input type="radio"
 						id="inputGender1" name="isadmin" value="true"
-						<#if userData?? && userData.isAdmin()?? && userData.isAdmin()> checked </#if>
-						<#if userError?? && userError.isAdmin()?? && userError.isAdmin()> checked </#if>
+						<#if userData?? && userData.role?? && userData.role == 'ROLE_ADMIN'> checked </#if>
+						<#if userError?? && userError.role?? && userError.role == 'ROLE_ADMIN'> checked </#if>
 						>Admin
 					</label> <label class="radio-inline"> <input type="radio"
 						id="inputGender2" name="isadmin" value="false" 
-						<#if userData?? && userData.isAdmin()?? && !userData.isAdmin()> checked </#if>
-						<#if userError?? && userError.isAdmin()?? && !userError.isAdmin()> checked </#if>
+						<#if userData?? && userData.role?? && userData.role == 'ROLE_USER'> checked </#if>
+						<#if userError?? && userData.role?? && userData.role == 'ROLE_USER'> checked </#if>
 						>User
 					</label>
 				</div>

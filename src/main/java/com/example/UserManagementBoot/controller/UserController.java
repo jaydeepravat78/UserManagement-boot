@@ -38,7 +38,6 @@ import com.example.UserManagementBoot.models.Address;
 import com.example.UserManagementBoot.models.CustomUserDetails;
 import com.example.UserManagementBoot.models.User;
 import com.example.UserManagementBoot.services.UserService;
-import com.example.UserManagementBoot.utility.JwtUtility;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -52,9 +51,7 @@ public class UserController {
 	@Autowired
 	PasswordEncoder encoder;
 	
-	@Autowired
-	JwtUtility jwtUtility;
-
+	
 	private static final Logger log = LogManager.getLogger(UserController.class);
 	private static final String HOMEPAGE = "home";
 	private static final String DAHSBOARDPAGE = "dashboard";
@@ -138,11 +135,8 @@ public class UserController {
 
 	@GetMapping("/loginController")
 	public String login(HttpSession session, HttpServletResponse response) {
-		
 		CustomUserDetails details = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User user = details.getUser();
-		String token = jwtUtility.generateToken(details);
-		response.addHeader("Authorization", "Bearer " + token);
 		if (user != null) {
 			if (user.getRole().equals("ROLE_ADMIN")) {
 				log.info("Admin logged in: " + user.getId());
